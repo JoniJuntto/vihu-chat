@@ -20,38 +20,41 @@ export const io = new Server(httpServer, {
 
 httpServer.listen(8000);
 
+httpServer.on("listening", () => {
+  console.log("Server started successfully");
+});
+
 io.on("connection", (socket) => {
   console.log("Client connected with id ", socket.id);
 
   socket.on("register", async (data: any) => {
-    
     const { twitchNickname, tiktokNickname, youtubeClientId } = data;
     try {
       const twitch = await connectToTwitch(twitchNickname);
       const tiktok = await connectToTiktok(tiktokNickname);
       const youtube = await connectToYoutube(youtubeClientId);
-      
-      if(twitch) {
+
+      if (twitch) {
         const twitchClients = clients.twitch[twitch.roomId];
-      clients.twitch[twitch.roomId] = [
-        ...(twitchClients ? twitchClients : []),
-        socket.id,
-      ];
-    }
-    if(tiktok) {
-      const tiktokClients = clients.tiktok[tiktok.roomId];
-      clients.tiktok[tiktok.roomId] = [
-        ...(tiktokClients ? tiktokClients : []),
-        socket.id,
-      ];
-    }
-    if(youtube) {
-      const youtubeClients = clients.youtube[youtube.roomId];
-      clients.youtube[youtube.roomId] = [
-        ...(youtubeClients ? youtubeClients : []),
-        socket.id,
-      ];
-    }
+        clients.twitch[twitch.roomId] = [
+          ...(twitchClients ? twitchClients : []),
+          socket.id,
+        ];
+      }
+      if (tiktok) {
+        const tiktokClients = clients.tiktok[tiktok.roomId];
+        clients.tiktok[tiktok.roomId] = [
+          ...(tiktokClients ? tiktokClients : []),
+          socket.id,
+        ];
+      }
+      if (youtube) {
+        const youtubeClients = clients.youtube[youtube.roomId];
+        clients.youtube[youtube.roomId] = [
+          ...(youtubeClients ? youtubeClients : []),
+          socket.id,
+        ];
+      }
 
       socket.on("disconnect", async () => {
         console.log("Client disconnected with id ", socket.id);
@@ -97,7 +100,6 @@ const getClientByChannelName = (source: string, channel: string) => {
   return clients[source][channel];
 };
 
-
 interface Message {
   type: "chat";
   message: string;
@@ -109,14 +111,12 @@ interface Message {
 export const sendToClient = (
   source: string,
   channel: string,
-  data: Message 
+  data: Message
 ) => {
   const clients = getClientByChannelName(source, channel);
   try {
-    clients.forEach((client: any) => 
+    clients.forEach((client: any) =>
       io.to(client).emit(data.type, { ...data, source })
     );
-  } catch (error) {
-    
-  }
+  } catch (error) {}
 };
