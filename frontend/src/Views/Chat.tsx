@@ -26,7 +26,6 @@ function Chat() {
     tiktok: false,
     youtube: false,
   });
-  const { height, width } = useWindowDimensions();
 
   useEffect(() => {
     setTwitchName(localStorage.getItem("twitchNickname") || "");
