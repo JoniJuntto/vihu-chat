@@ -7,12 +7,12 @@ const connectToYoutube = async (channelId: string) => {
     const liveChat = new LiveChat({ channelId: channelId })
     liveChat.on("chat", (chatItem) => {
         try {
-            if(chatItem.message[0].text === undefined){
+            if(chatItem.message[0]["text"] === undefined){
                 return;
             }
             sendToClient("youtube", channelId, {
                 type: "chat",
-                message: chatItem.message[0].text,
+                message: chatItem.message[0]["text"],
                 sender: chatItem.author.name,
                 followRole: "1",
                 followInfo: "1",
@@ -35,4 +35,4 @@ const connectToYoutube = async (channelId: string) => {
     };
 }
 
-export { connectToYoutube }
+export { connectToYoutube };
