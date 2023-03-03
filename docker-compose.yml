@@ -5,7 +5,7 @@ version: '3'
 services:
   frontend:
     container_name: chatbot-frontend
-    build: ./backend
+    build: ./frontend
     pull_policy: build
     env_file:
       - stack.env
