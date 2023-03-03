@@ -37,7 +37,7 @@ function Chat() {
 
     socket.on("chat", (data: any) => {
       setMessages((messages) => {
-        if (messages.length < 6) {
+        if (messages.length < 12) {
           return [...messages, data];
         } else {
           return [...messages.slice(1), data];
