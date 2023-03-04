@@ -36,9 +36,9 @@ io.on("connection", (socket) => {
 
   socket.on("register", async (data: any) => {
     socket.data = {
-      twitch: data.twitchNickname,
-      tiktok: data.tiktokNickname,
-      youtube: data.youtubeClientId,
+      twitch: data.twitch,
+      tiktok: data.tiktok,
+      youtube: data.youtube,
     };
 
     for (const source of Object.keys(socket.data)) {
