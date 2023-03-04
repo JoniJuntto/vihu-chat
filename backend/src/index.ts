@@ -126,8 +126,6 @@ export const sendToClient = (
 ) => {
   const clients = servers[source][channel]?.clients;
 
-  console.log("Sending message to clients", data.message, clients);
-
   try {
     clients.forEach((client: any) =>
       io.to(client).emit(data.type, { ...data, source })

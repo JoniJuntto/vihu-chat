@@ -31,11 +31,11 @@ const theme = createTheme({
     },
     body1: {
       fontWeight: 400,
-      fontSize: "1.25rem",
+      fontSize: "1.5rem",
     },
     body2: {
       fontWeight: 300,
-      fontSize: "0.875rem",
+      fontSize: "1.25rem",
     },
   },
   components: {
