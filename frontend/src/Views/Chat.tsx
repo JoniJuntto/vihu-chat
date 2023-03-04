@@ -76,11 +76,12 @@ function Chat() {
   return (
     <Box
       sx={{
-        backgroundColor: "#26262A",
+        backgroundColor: "rgba(38, 38, 42, 0.8)",
         padding: "0 2rem 0 2rem",
-        borderRadius: "0.5rem",
+        borderRadius: "0 0 0 2rem",
         height: "100%",
         display: "flex",
+        maxWidth: "40rem",
       }}
     >
       {!connectPressed ? (
@@ -191,7 +192,7 @@ function Chat() {
             fullWidth
             onClick={connectBot}
             sx={{
-              margin: "auto 0 0 0",
+              margin: "auto 0 2rem 0",
             }}
             disabled={Object.keys(channels).every(
               (key: string) => !channels[key]
@@ -201,7 +202,11 @@ function Chat() {
           </Button>
         </Box>
       ) : (
-        <Box>
+        <Box
+          sx={{
+            overflow: "hidden",
+          }}
+        >
           <Logo />
           <Box
             sx={{
@@ -216,25 +221,36 @@ function Chat() {
                   key={index + message.sender + message.message}
                   style={{
                     display: "flex",
-                    alignItems: "center",
                     gap: "0.25rem",
                   }}
                 >
-                  {renderSwitch(message.source)}
+                  <Box
+                    sx={{
+                      margin: "0.5rem 0 0 0",
+                    }}
+                  >
+                    {renderSwitch(message.source)}
+                  </Box>
                   <Box
                     sx={{
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "flex-start",
+                      textAlign: "start",
                       gap: "0.25rem",
                     }}
                   >
                     <Typography
-                      variant="body2"
+                      variant="body1"
                       component="span"
                       style={{
                         fontWeight: "bold",
-                        color: message.source === "tiktok" ? "green" : "blue",
+                        color:
+                          message.source === "tiktok"
+                            ? "#ff0050"
+                            : message.source === "twitch"
+                            ? "#9146ff"
+                            : "#ff0000",
                       }}
                     >
                       {message.sender}
