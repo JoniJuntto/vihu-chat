@@ -4,17 +4,11 @@ import { sendToClient } from "./index";
 
 const connectToTiktok = async (tiktokUsername: string) => {
   let client = new WebcastPushConnection(tiktokUsername);
-  let state = null;
 
-  try {
-    state = await client.connect();
-    console.info(`Connected to roomId ${state.roomId}`);
-  } catch (err) {
-    return undefined;
-  }
+  await client.connect();
 
   client.on("chat", (data) => {
-    sendToClient("tiktok", state.roomId, {
+    sendToClient("tiktok", tiktokUsername, {
       type: "chat",
       message: data.comment,
       sender: data.uniqueId,
@@ -22,8 +16,8 @@ const connectToTiktok = async (tiktokUsername: string) => {
       followInfo: data.followInfo.followerCount,
     });
   });
-  
-  return { client: client, roomId: state.roomId };
+
+  return client;
 };
 
 export { connectToTiktok };
