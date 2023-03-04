@@ -63,13 +63,13 @@ function Chat() {
   const renderSwitch = (param: string) => {
     switch (param) {
       case "tiktok":
-        return <img src={tiktok} style={{ width: 20, height: 20 }} />;
+        return <img src={tiktok} style={{ width: 30, height: 30 }} />;
       case "twitch":
-        return <img src={twitch} style={{ width: 20, height: 20 }} />;
+        return <img src={twitch} style={{ width: 30, height: 30 }} />;
       case "youtube":
-        return <img src={youtube} style={{ width: 20, height: 20 }} />;
+        return <img src={youtube} style={{ width: 30, height: 30 }} />;
       default:
-        return <img src={tiktok} style={{ width: 20, height: 20 }} />;
+        return <img src={tiktok} style={{ width: 30, height: 30 }} />;
     }
   };
 
@@ -77,7 +77,7 @@ function Chat() {
     <Box
       sx={{
         backgroundColor: "#26262A",
-        padding: "2rem",
+        padding: "0 2rem 0 2rem",
         borderRadius: "0.5rem",
         height: "100%",
         display: "flex",
@@ -203,18 +203,32 @@ function Chat() {
       ) : (
         <Box>
           <Logo />
-          {messages.map((message, index) => {
-            return (
-              <Box key={index + message.sender + message.message}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+            }}
+          >
+            {messages.map((message, index) => {
+              return (
                 <Box
+                  key={index + message.sender + message.message}
                   style={{
                     display: "flex",
-                    alignItems: "flex-start",
+                    alignItems: "center",
                     gap: "0.25rem",
                   }}
                 >
                   {renderSwitch(message.source)}
-                  <Typography variant="body2">
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.25rem",
+                    }}
+                  >
                     <Typography
                       variant="body2"
                       component="span"
@@ -225,20 +239,14 @@ function Chat() {
                     >
                       {message.sender}
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      component="span"
-                      style={{
-                        marginLeft: 5,
-                      }}
-                    >
+                    <Typography variant="body2" component="span">
                       {message.message}
                     </Typography>
-                  </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            );
-          })}
+              );
+            })}
+          </Box>
         </Box>
       )}
     </Box>
