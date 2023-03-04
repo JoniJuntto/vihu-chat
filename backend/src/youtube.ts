@@ -1,38 +1,39 @@
 import { sendToClient } from "index";
-import { LiveChat } from "youtube-chat"
-
+import { LiveChat } from "youtube-chat";
 
 const connectToYoutube = async (channelId: string) => {
-    console.log("Connecting to Youtube, " + channelId)
-    const liveChat = new LiveChat({ channelId: channelId })
-    liveChat.on("chat", (chatItem) => {
-        try {
-            if(chatItem.message[0]["text"] === undefined){
-                return;
-            }
-            sendToClient("youtube", channelId, {
-                type: "chat",
-                message: chatItem.message[0]["text"],
-                sender: chatItem.author.name,
-                followRole: "1",
-                followInfo: "1",
-                });
-        } catch (error) {
-            console.log(error)
-        }
+  const client = new LiveChat({ channelId: channelId });
 
-    })
-    liveChat.on("error", (err) => {
-        console.log(err)
-      })
-    const ok = await liveChat.start()
-    if (!ok) {
-        console.log("Failed to start, check emitted error")
+  const ok = await client.start();
+
+  if (!ok) {
+    console.log("Failed to start, check emitted error");
+    throw new Error("Failed to connect to youtube");
+  }
+
+  client.on("chat", (chatItem) => {
+    try {
+      if (chatItem.message[0]["text"] === undefined) {
+        return;
+      }
+
+      sendToClient("youtube", channelId, {
+        type: "chat",
+        message: chatItem.message[0]["text"],
+        sender: chatItem.author.name,
+        followRole: "1",
+        followInfo: "1",
+      });
+    } catch (error) {
+      console.log(error);
     }
-    return {
-        client: liveChat,
-        roomId: channelId,
-    };
-}
+  });
+
+  client.on("error", (err) => {
+    console.log("youtube error", err);
+  });
+
+  return client;
+};
 
 export { connectToYoutube };

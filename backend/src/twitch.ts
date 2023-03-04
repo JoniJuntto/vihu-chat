@@ -2,8 +2,6 @@ import { client as twitchClient } from "tmi.js";
 import { sendToClient } from "./index";
 
 const connectToTwitch = async (channelName: string) => {
-  console.log("Connecting to Twitch, " + channelName);
-
   const client = new twitchClient({
     options: { debug: false },
     connection: {
@@ -13,11 +11,7 @@ const connectToTwitch = async (channelName: string) => {
     channels: [channelName],
   });
 
-  try {
-    await client.connect();
-  } catch (error) {
-    return undefined;
-  }
+  await client.connect();
 
   client.on("message", async (channel, tags, message, self) => {
     if (self) return;
@@ -30,10 +24,7 @@ const connectToTwitch = async (channelName: string) => {
     });
   });
 
-  return {
-    client: client,
-    roomId: channelName,
-  };
+  return client;
 };
 
 export { connectToTwitch };
