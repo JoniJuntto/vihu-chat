@@ -191,7 +191,7 @@ function Chat() {
             fullWidth
             onClick={connectBot}
             sx={{
-              margin: "auto 0 0 0",
+              margin: "auto 0 5 0",
             }}
             disabled={Object.keys(channels).every(
               (key: string) => !channels[key]
