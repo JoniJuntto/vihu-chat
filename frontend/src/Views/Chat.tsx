@@ -124,7 +124,7 @@ function Chat() {
                 placeholder="tiktok"
                 fullWidth
                 onChange={(e) =>
-                  setChannels((prev) => ({ ...prev, tiktok: e.target.value }))
+                  setChannels((prev) => ({ ...prev, tiktok: e.target.value.toLowerCase() }))
                 }
               />
               <Typography variant="body2">
@@ -148,7 +148,7 @@ function Chat() {
                 InputLabelProps={{ shrink: true }}
                 fullWidth
                 onChange={(e) =>
-                  setChannels((prev) => ({ ...prev, twitch: e.target.value }))
+                  setChannels((prev) => ({ ...prev, twitch: e.target.value.toLowerCase() }))
                 }
               />
               <Typography variant="body2">
