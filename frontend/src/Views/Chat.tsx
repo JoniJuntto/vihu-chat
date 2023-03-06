@@ -77,11 +77,10 @@ function Chat() {
     <Box
       sx={{
         backgroundColor: "rgba(38, 38, 42, 0.8)",
-        padding: "0 2rem 0 2rem",
         borderRadius: "0 0 0 2rem",
         height: "100%",
         display: "flex",
-        maxWidth: "40rem",
+        padding: "2rem",
       }}
     >
       {!connectPressed ? (
@@ -92,7 +91,7 @@ function Chat() {
             justifyContent: "center",
           }}
         >
-          <Box display={"flex"} justifyContent="center">
+          <Box display={"flex"} justifyContent="center" width={"100%"}>
             <Logo />
           </Box>
           <Box textAlign={"start"} margin="0 0 2rem 0">
