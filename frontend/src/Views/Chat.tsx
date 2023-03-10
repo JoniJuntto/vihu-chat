@@ -6,6 +6,7 @@ import tiktok from "~/assets/tiktok.png";
 import twitch from "~/assets/twitch.png";
 
 import Logo from "~/assets/logo";
+import TransparencySlider from "~/components/TransparencySlider";
 
 type message = {
   message: string;
@@ -23,6 +24,7 @@ function Chat() {
     youtube: "",
   });
   const [connectPressed, setConnectPressed] = useState<boolean>(false);
+  const [transparency, setTransparency] = useState(50);
 
   useEffect(() => {
     const channelsString = localStorage.getItem("channels");
@@ -76,7 +78,7 @@ function Chat() {
   return (
     <Box
       sx={{
-        backgroundColor: "rgba(38, 38, 42, 0.8)",
+        backgroundColor: `rgba(38, 38, 42, ${transparency})`,
         borderRadius: "0 0 0 2rem",
         height: "100%",
         display: "flex",
@@ -94,6 +96,7 @@ function Chat() {
           <Box display={"flex"} justifyContent="center" width={"100%"}>
             <Logo />
           </Box>
+          <TransparencySlider setTransparency={setTransparency} />
           <Box textAlign={"start"} margin="0 0 2rem 0">
             <Typography variant="h5">Enter your channel names</Typography>
             <Typography variant="body2">
