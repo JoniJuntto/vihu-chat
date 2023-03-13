@@ -1,12 +1,12 @@
-import { SetStateAction, useState } from 'react';
+import { ChangeEvent, SetStateAction, useState } from 'react';
 
 export default function TransparencySlider({ setTransparency }: { setTransparency: React.Dispatch<SetStateAction<number>>}) {
     const [sliderValue, setSliderValue] = useState(50);
 
-  const handleTransparencyChange = ({event}:any) => {
-    console.log(event.target.value / 100);
-    setSliderValue(event.target.value);
-    setTransparency(event.target.value / 100);
+  const handleTransparencyChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(event.target.value);
+    setSliderValue(value);
+    setTransparency(value / 100);
   };
 
   return (
