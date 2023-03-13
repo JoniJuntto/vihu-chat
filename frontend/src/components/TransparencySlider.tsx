@@ -3,7 +3,7 @@ import { SetStateAction, useState } from 'react';
 export default function TransparencySlider({ setTransparency }: { setTransparency: React.Dispatch<SetStateAction<number>>}) {
     const [sliderValue, setSliderValue] = useState(50);
 
-  const handleTransparencyChange = (event) => {
+  const handleTransparencyChange = ({event}:any) => {
     console.log(event.target.value / 100);
     setSliderValue(event.target.value);
     setTransparency(event.target.value / 100);
