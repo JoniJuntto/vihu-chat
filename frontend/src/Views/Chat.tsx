@@ -1,5 +1,5 @@
 import { Box, Button, Link, TextField, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import youtube from "~/assets/youtube.png";
 import tiktok from "~/assets/tiktok.png";
@@ -30,9 +30,12 @@ function Chat() {
     const channelsString = localStorage.getItem("channels");
 
     if (channelsString) {
+      try {
       const channels = JSON.parse(channelsString);
-
       setChannels(channels);
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     socket.on("chat", (data: any) => {
@@ -51,7 +54,7 @@ function Chat() {
     };
   }, []);
 
-  const connectBot = async () => {
+  const connectBot = useCallback(async () => {
     localStorage.setItem("channels", JSON.stringify(channels));
 
     try {
@@ -60,7 +63,7 @@ function Chat() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [channels]);
 
   const renderSwitch = (param: string) => {
     switch (param) {

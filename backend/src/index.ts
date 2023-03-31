@@ -10,10 +10,26 @@ const connectors = {
   youtube: connectToYoutube,
 };
 
+interface Client {
+  disconnect: () => Promise<void> | void;
+  stop?: () => void;
+}
+
+interface ServerEntry {
+  client: Client;
+  clients: Set<string>;
+}
+
 const servers = {
-  twitch: {},
-  tiktok: {},
-  youtube: {},
+  twitch: {} as Record<string, ServerEntry>,
+  tiktok: {} as Record<string, ServerEntry>,
+  youtube: {} as Record<string, ServerEntry>,
+};
+
+type ChannelData = {
+  twitch: string;
+  tiktok: string;
+  youtube: string;
 };
 
 const httpServer = createServer();
@@ -34,7 +50,7 @@ httpServer.on("listening", () => {
 io.on("connection", (socket) => {
   console.log("Client connected with id ", socket.id);
 
-  socket.on("register", async (data: any) => {
+  socket.on("register", async (data: ChannelData) => {
     socket.data = {
       twitch: data.twitch,
       tiktok: data.tiktok,
@@ -54,12 +70,15 @@ io.on("connection", (socket) => {
 
             servers[source][channel] = {
               client: client,
-              clients: [socket.id],
+              clients: new Set([socket.id]),
             };
           } else {
             servers[source][channel] = {
               ...servers[source][channel],
-              clients: [...servers[source][channel].clients, socket.id],
+              clients: new Set([
+                ...servers[source][channel].clients,
+                socket.id,
+              ]),
             };
           }
         }
@@ -80,7 +99,10 @@ io.on("connection", (socket) => {
 
     for (const source of Object.keys(socket.data)) {
       for (const channel in servers[source]) {
-        const filtered: string[] = servers[source][channel].clients.filter(
+        const clientsArray = Array.from(
+          servers[source][channel].clients
+        ) as string[];
+        const filtered: string[] = clientsArray.filter(
           (id: string) => id !== socket.id
         );
 
@@ -104,7 +126,7 @@ io.on("connection", (socket) => {
 
           delete servers[source][channel];
         } else {
-          servers[source][channel].clients = filtered;
+          servers[source][channel].clients = new Set(filtered);
         }
       }
     }
@@ -120,14 +142,14 @@ interface Message {
 }
 
 export const sendToClient = (
-  source: string,
+  source: "tiktok" | "twitch" | "youtube",
   channel: string,
   data: Message
 ) => {
   const clients = servers[source][channel]?.clients;
 
   try {
-    clients.forEach((client: any) =>
+    clients.forEach((client: string) =>
       io.to(client).emit(data.type, { ...data, source })
     );
   } catch (error) {
