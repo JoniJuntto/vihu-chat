@@ -1,3 +1,4 @@
+  TextField,
 import {
   Box,
   CircularProgress,
@@ -13,7 +14,14 @@ import TransparencySlider from "~/components/TransparencySlider";
 import { io } from "socket.io-client";
 import tiktok from "~/assets/tiktok.png";
 import twitch from "~/assets/twitch.png";
+import "react-toastify/dist/ReactToastify.css";
 import youtube from "~/assets/youtube.png";
+
+import Logo from "~/assets/logo";
+import TransparencySlider from "~/components/TransparencySlider";
+import { ToastContainer, toast } from "react-toastify";
+
+import ProgressCircle from "~/components/ProgressCircle";
 
 type message = {
   message: string;
@@ -31,6 +39,8 @@ function Chat() {
     youtube: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
+  const [followCount, setFollowCount] = useState(0);
+  const [latestFollow, setLatestFollow] = useState("");
   const [channels, setChannels] = useState<Record<string, string>>({
     tiktok: "",
     twitch: "",
@@ -38,10 +48,15 @@ function Chat() {
   });
   const [transparency, setTransparency] = useState(50);
   const [connected, setConnected] = useState<boolean>(false);
+  const [likes, setLikes] = useState(0);
+  const [latestLike, setLatestLike] = useState("");
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showLikes, setShowLikes] = useState(false);
+  const [followGoal, setFollowGoal] = useState<number>(1);
+  const [likesGoal, setLikesGoal] = useState<number>(1);
 
   useEffect(() => {
     const channelsString = localStorage.getItem("channels");
-
     if (channelsString) {
       try {
         const channels = JSON.parse(channelsString);
@@ -59,6 +74,26 @@ function Chat() {
           return [...messages.slice(1), data];
         }
       });
+    });
+    socket.on("follow", (data: any) => {
+      setFollowCount((count) => count + 1);
+      setLatestFollow(data.sender);
+      toast.success(`${data.sender} Just followed`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    });
+
+    socket.on("like", (data: any) => {
+      console.log(data);
+      setLikes((count) => count + 1);
+      setLatestLike(data.sender);
     });
 
     socket.on("errors", (data: any) => {
@@ -78,6 +113,8 @@ function Chat() {
 
     return () => {
       socket.off("chat");
+      socket.off("follow");
+      socket.off("like");
     };
   }, []);
 
@@ -105,6 +142,20 @@ function Chat() {
     }
   };
 
+    const followProgress = (followCount / followGoal) * 100;
+    const likeProgress = (likes / likesGoal) * 100;
+
+
+  const handleChange = (value: string, type: string) => {
+    if (type === "likes") {
+      setShowLikes(true);
+      setLikesGoal(parseInt(value));
+    } else {
+      setShowFollowers(true);
+      setFollowGoal(parseInt(value));
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -112,7 +163,9 @@ function Chat() {
         borderRadius: "0 0 0 2rem",
         height: "100%",
         display: "flex",
+        flexDirection: "column",
         padding: "2rem",
+        minWidth: 500,
       }}
     >
       {!connected ? (
@@ -126,6 +179,55 @@ function Chat() {
           <Box display={"flex"} justifyContent="center" width={"100%"}>
             <Logo />
           </Box>
+          <Box>
+            <Typography variant="h5" textAlign="center">
+              Turn on widgets
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Box
+                sx={{ flexDirection: "column", marginRight: 5, marginTop: 5 }}
+              >
+                <Typography variant="body2" textAlign="center">
+                  Followers
+                </Typography>
+                <TextField
+                  label="Goal"
+                  type="number"
+                  sx={{ width: 100, marginTop: 3 }}
+                  InputLabelProps={{
+                    shrink: true,
+                    sx: { fontSize: "0.8rem" },
+                  }}
+                  onChange={(e) => handleChange(e.target.value, "followers")}
+                />
+              </Box>
+              <Box
+                sx={{ flexDirection: "column", marginLeft: 5, marginTop: 5 }}
+              >
+                <Typography variant="body2" textAlign="center">
+                  Likes
+                </Typography>
+                <TextField
+                  label="Goal"
+                  type="number"
+                  sx={{ width: 100, marginTop: 3 }}
+                  InputLabelProps={{
+                    shrink: true,
+                    sx: { fontSize: "0.8rem" },
+                  }}
+                  onChange={(e) => handleChange(e.target.value, "likes")}
+                />
+              </Box>
+            </Box>
+          </Box>
+
           <TransparencySlider setTransparency={setTransparency} />
           <Box textAlign={"start"} margin="0 0 2rem 0">
             <Typography variant="h5">Enter your channel names</Typography>
@@ -173,9 +275,7 @@ function Chat() {
             <Box
               sx={{
                 display: "flex",
-                width: "100%",
                 flexDirection: "column",
-                alignItems: "flex-start",
                 gap: "0.5rem",
               }}
             >
@@ -259,14 +359,41 @@ function Chat() {
         <Box
           sx={{
             overflow: "hidden",
+            width: "100%",
           }}
         >
-          <Logo />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <div>
+              {showLikes && (
+                <ProgressCircle
+                  latest={latestLike}
+                  progress={likeProgress}
+                  type="Like"
+                />
+              )}
+            </div>
+
+            <div>
+              {showFollowers && (
+                <ProgressCircle
+                  latest={latestFollow}
+                  progress={followProgress}
+                  type="Follow"
+                />
+              )}
+            </div>
+          </div>
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               gap: "0.5rem",
+              wordBreak: "break-all",
             }}
           >
             {messages.map((message, index) => {
@@ -319,8 +446,52 @@ function Chat() {
           </Box>
         </Box>
       )}
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </Box>
   );
 }
 
 export default Chat;
+
+const styles = {
+  progressBackground: {
+    width: 50,
+    height: 50,
+    borderRadius: "50%",
+    backgroundColor: "grey",
+    position: "relative",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "green",
+    borderRadius: "50%",
+    position: "relative",
+    overflow: "hidden",
+    "&::before, &::after": {
+      content: '""',
+      position: "absolute",
+      top: "50%",
+      left: "-5px",
+      width: "10px",
+      height: "10px",
+      borderRadius: "50%",
+      backgroundColor: "green",
+      transform: "translateY(-50%)",
+    },
+    "&::after": {
+      left: "auto",
+      right: "-5px",
+    },
+  },
+};
