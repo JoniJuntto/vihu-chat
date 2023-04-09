@@ -147,7 +147,7 @@ io.on("connection", (socket) => {
 });
 
 interface Message {
-  type: "chat";
+  type: "chat" | "follow" | "host" | "raid" | "sub" | "subgift" | "like";
   message: string;
   sender: string;
   followRole: string;
@@ -159,12 +159,14 @@ export const sendToClient = (
   channel: string,
   data: Message
 ) => {
+  console.log("Sending message to client", source, channel, data)
   const clients = servers[source][channel]?.clients;
 
   try {
     clients.forEach((client: string) =>
       io.to(client).emit(data.type, { ...data, source })
     );
+    console.log("Message emitted successfully")
   } catch (error) {
     console.error("Failed to emit message", error);
   }

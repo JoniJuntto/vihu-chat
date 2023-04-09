@@ -55,6 +55,11 @@ function Chat() {
   const [followGoal, setFollowGoal] = useState<number>(1);
   const [likesGoal, setLikesGoal] = useState<number>(1);
 
+  
+  const followProgress = (followCount / followGoal) * 100;
+  const likeProgress = (likes / likesGoal) * 100;
+  const chatBoxRef = useRef(null);
+
   useEffect(() => {
     const channelsString = localStorage.getItem("channels");
     if (channelsString) {
@@ -94,6 +99,16 @@ function Chat() {
       console.log(data);
       setLikes((count) => count + 1);
       setLatestLike(data.sender);
+      toast.success(`${data.sender} just liked!`, {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: likeProgress,
+        theme: "dark",
+      });
     });
 
     socket.on("errors", (data: any) => {
@@ -142,8 +157,6 @@ function Chat() {
     }
   };
 
-    const followProgress = (followCount / followGoal) * 100;
-    const likeProgress = (likes / likesGoal) * 100;
 
 
   const handleChange = (value: string, type: string) => {
@@ -156,6 +169,19 @@ function Chat() {
     }
   };
 
+  const createToast = () => {
+    toast.success("Hello", {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -166,7 +192,9 @@ function Chat() {
         flexDirection: "column",
         padding: "2rem",
         minWidth: 500,
+        overflow: "auto",
       }}
+      ref={chatBoxRef}
     >
       {!connected ? (
         <Box
@@ -450,48 +478,17 @@ function Chat() {
         position="top-center"
         autoClose={5000}
         hideProgressBar={false}
-        newestOnTop={false}
+        newestOnTop={true}
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
-        pauseOnHover
         theme="dark"
+        limit={3}
+        style={{ width: "40%" }}
       />
     </Box>
   );
 }
 
 export default Chat;
-
-const styles = {
-  progressBackground: {
-    width: 50,
-    height: 50,
-    borderRadius: "50%",
-    backgroundColor: "grey",
-    position: "relative",
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: "green",
-    borderRadius: "50%",
-    position: "relative",
-    overflow: "hidden",
-    "&::before, &::after": {
-      content: '""',
-      position: "absolute",
-      top: "50%",
-      left: "-5px",
-      width: "10px",
-      height: "10px",
-      borderRadius: "50%",
-      backgroundColor: "green",
-      transform: "translateY(-50%)",
-    },
-    "&::after": {
-      left: "auto",
-      right: "-5px",
-    },
-  },
-};
