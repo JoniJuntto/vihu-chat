@@ -1,14 +1,17 @@
-import { sendToClient } from "index";
 import { LiveChat } from "youtube-chat";
+import { sendToClient } from "index";
 
 const connectToYoutube = async (channelId: string) => {
   const client = new LiveChat({ channelId: channelId });
 
-  const ok = await client.start();
-
-  if (!ok) {
-    console.log("Failed to start, check emitted error");
-    throw new Error("Failed to connect to youtube");
+  try {
+    await client.start();
+  } catch (err) {
+    if (err.message === "Live Stream was not found") {
+      throw "Stream is offline";
+    } else {
+      throw "Channel not found";
+    }
   }
 
   client.on("chat", (chatItem) => {
@@ -27,10 +30,6 @@ const connectToYoutube = async (channelId: string) => {
     } catch (error) {
       console.log(error);
     }
-  });
-
-  client.on("error", (err) => {
-    console.log("youtube error", err);
   });
 
   return client;
