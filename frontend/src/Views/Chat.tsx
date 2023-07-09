@@ -1,12 +1,19 @@
-import { Box, Button, Link, TextField, Typography } from "@mui/material";
-import { useEffect, useState, useCallback } from "react";
-import { io } from "socket.io-client";
-import youtube from "~/assets/youtube.png";
-import tiktok from "~/assets/tiktok.png";
-import twitch from "~/assets/twitch.png";
+import {
+  Box,
+  CircularProgress,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
 
+import { LoadingButton } from "@mui/lab";
 import Logo from "~/assets/logo";
 import TransparencySlider from "~/components/TransparencySlider";
+import { io } from "socket.io-client";
+import tiktok from "~/assets/tiktok.png";
+import twitch from "~/assets/twitch.png";
+import youtube from "~/assets/youtube.png";
 
 type message = {
   message: string;
@@ -18,28 +25,33 @@ const socket = io(import.meta.env.VITE_SOCKET_URL as string);
 
 function Chat() {
   const [messages, setMessages] = useState<message[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({
+    tiktok: "",
+    twitch: "",
+    youtube: "",
+  });
+  const [loading, setLoading] = useState<boolean>(false);
   const [channels, setChannels] = useState<Record<string, string>>({
     tiktok: "",
     twitch: "",
     youtube: "",
   });
-  const [connectPressed, setConnectPressed] = useState<boolean>(false);
   const [transparency, setTransparency] = useState(50);
+  const [connected, setConnected] = useState<boolean>(false);
 
   useEffect(() => {
     const channelsString = localStorage.getItem("channels");
 
     if (channelsString) {
       try {
-      const channels = JSON.parse(channelsString);
-      setChannels(channels);
+        const channels = JSON.parse(channelsString);
+        setChannels(channels);
       } catch (error) {
         console.log(error);
       }
     }
 
     socket.on("chat", (data: any) => {
-      console.log(data);
       setMessages((messages) => {
         if (messages.length < 6) {
           return [...messages, data];
@@ -47,6 +59,21 @@ function Chat() {
           return [...messages.slice(1), data];
         }
       });
+    });
+
+    socket.on("errors", (data: any) => {
+      setErrors(data);
+      setLoading(false);
+    });
+
+    socket.on("success", () => {
+      setErrors({
+        tiktok: "",
+        twitch: "",
+        youtube: "",
+      });
+      setLoading(false);
+      setConnected(true);
     });
 
     return () => {
@@ -59,7 +86,7 @@ function Chat() {
 
     try {
       socket.emit("register", channels);
-      setConnectPressed(true);
+      setLoading(true);
     } catch (error) {
       console.log(error);
     }
@@ -88,7 +115,7 @@ function Chat() {
         padding: "2rem",
       }}
     >
-      {!connectPressed ? (
+      {!connected ? (
         <Box
           sx={{
             display: "flex",
@@ -128,9 +155,14 @@ function Chat() {
                 value={channels.tiktok}
                 InputLabelProps={{ shrink: true }}
                 placeholder="tiktok"
+                error={errors.tiktok !== ""}
+                helperText={errors.tiktok}
                 fullWidth
                 onChange={(e) =>
-                  setChannels((prev) => ({ ...prev, tiktok: e.target.value.toLowerCase() }))
+                  setChannels((prev) => ({
+                    ...prev,
+                    tiktok: e.target.value.toLowerCase(),
+                  }))
                 }
               />
               <Typography variant="body2">
@@ -152,9 +184,14 @@ function Chat() {
                 value={channels.twitch}
                 placeholder="twitch"
                 InputLabelProps={{ shrink: true }}
+                error={errors.twitch !== ""}
+                helperText={errors.twitch}
                 fullWidth
                 onChange={(e) =>
-                  setChannels((prev) => ({ ...prev, twitch: e.target.value.toLowerCase() }))
+                  setChannels((prev) => ({
+                    ...prev,
+                    twitch: e.target.value.toLowerCase(),
+                  }))
                 }
               />
               <Typography variant="body2">
@@ -176,6 +213,8 @@ function Chat() {
                 placeholder="UlvG2-lrZTJD3DELBsJo9flO"
                 InputLabelProps={{ shrink: true }}
                 fullWidth
+                error={errors.youtube !== ""}
+                helperText={errors.youtube}
                 onChange={(e) =>
                   setChannels((prev) => ({ ...prev, youtube: e.target.value }))
                 }
@@ -192,19 +231,29 @@ function Chat() {
               </Typography>
             </Box>
           </Box>
-          <Button
+          <LoadingButton
             variant="contained"
             fullWidth
+            loading={loading}
             onClick={connectBot}
+            loadingIndicator={
+              <CircularProgress
+                size={24}
+                sx={{
+                  color: "white",
+                }}
+              />
+            }
             sx={{
               margin: "auto 0 2rem 0",
+              color: "white",
             }}
             disabled={Object.keys(channels).every(
               (key: string) => !channels[key]
             )}
           >
             Start the screen
-          </Button>
+          </LoadingButton>
         </Box>
       ) : (
         <Box

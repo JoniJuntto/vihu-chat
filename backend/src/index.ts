@@ -1,8 +1,8 @@
+import { Server } from "socket.io";
 import { connectToTiktok } from "./tiktok";
 import { connectToTwitch } from "./twitch";
 import { connectToYoutube } from "./youtube";
 import { createServer } from "http";
-import { Server } from "socket.io";
 
 const connectors = {
   twitch: connectToTwitch,
@@ -57,6 +57,12 @@ io.on("connection", (socket) => {
       youtube: data.youtube,
     };
 
+    const errors: Record<string, string> = {
+      twitch: "",
+      tiktok: "",
+      youtube: "",
+    };
+
     for (const source of Object.keys(socket.data)) {
       try {
         if (socket.data[source]) {
@@ -83,14 +89,21 @@ io.on("connection", (socket) => {
           }
         }
       } catch (err) {
-        console.error(
-          `Failed to connect to ${source} with nickname ${socket.data[source]}`,
-          err
-        );
-        io.to(socket.id).emit("err", {
-          error: `Failed to connect to ${source} with nickname ${socket.data[source]}`,
-        });
+        // console.error(
+        //   `Failed to connect to ${source} with nickname ${socket.data[source]}`,
+        //   err
+        // );
+        console.error("err", err);
+        errors[source] = typeof err === "string" ? err : err.message;
       }
+    }
+
+    if (errors.twitch || errors.tiktok || errors.youtube) {
+      io.to(socket.id).emit("errors", errors);
+    } else {
+      io.to(socket.id).emit("success", {
+        message: "Successfully connected to all sources",
+      });
     }
   });
 

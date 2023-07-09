@@ -1,5 +1,5 @@
-import { client as twitchClient } from "tmi.js";
 import { sendToClient } from "./index";
+import { client as twitchClient } from "tmi.js";
 
 const connectToTwitch = async (channelName: string) => {
   const client = new twitchClient({
@@ -8,10 +8,15 @@ const connectToTwitch = async (channelName: string) => {
       secure: true,
       reconnect: true,
     },
-    channels: [channelName],
   });
 
   await client.connect();
+
+  try {
+    await client.join(channelName);
+  } catch {
+    throw "Channel not found";
+  }
 
   client.on("message", async (channel, tags, message, self) => {
     if (self) return;
