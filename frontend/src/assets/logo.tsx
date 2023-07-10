@@ -1,10 +1,10 @@
 const SvgComponent = () => (
   <svg
-    viewBox="0 0 640 230"
+    viewBox="0 0 640 180"
     data-background-color="#ffffff"
     preserveAspectRatio="xMidYMid meet"
-    height="170"
-    width="640"
+    height="100"
+    width="240"
     xmlns="http://www.w3.org/2000/svg"
   >
     <g id="tight-bounds" transform="matrix(1,0,0,1,122.24000000000001,76.4)">

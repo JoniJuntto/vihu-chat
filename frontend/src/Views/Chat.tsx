@@ -1,19 +1,25 @@
+import "react-toastify/dist/ReactToastify.css";
+
 import {
   Box,
+  Checkbox,
   CircularProgress,
   Link,
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { LoadingButton } from "@mui/lab";
 import Logo from "~/assets/logo";
+import ProgressCircle from "~/components/ProgressCircle";
 import TransparencySlider from "~/components/TransparencySlider";
 import { io } from "socket.io-client";
 import tiktok from "~/assets/tiktok.png";
 import twitch from "~/assets/twitch.png";
 import youtube from "~/assets/youtube.png";
+import { CheckBox } from "@mui/icons-material";
 
 type message = {
   message: string;
@@ -31,6 +37,8 @@ function Chat() {
     youtube: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
+  const [followCount, setFollowCount] = useState(0);
+  const [latestFollow, setLatestFollow] = useState("");
   const [channels, setChannels] = useState<Record<string, string>>({
     tiktok: "",
     twitch: "",
@@ -38,10 +46,20 @@ function Chat() {
   });
   const [transparency, setTransparency] = useState(50);
   const [connected, setConnected] = useState<boolean>(false);
+  const [likes, setLikes] = useState(0);
+  const [latestLike, setLatestLike] = useState("");
+  const [widgetData, setWidgetData] = useState<Record<string, any>>({
+    followers: 0,
+    likes: 0,
+    show: false,
+  });
+
+  const followProgress = (followCount / widgetData.followers) * 100;
+  const likeProgress = (likes / widgetData.likes) * 100;
+  const chatBoxRef = useRef(null);
 
   useEffect(() => {
     const channelsString = localStorage.getItem("channels");
-
     if (channelsString) {
       try {
         const channels = JSON.parse(channelsString);
@@ -60,10 +78,53 @@ function Chat() {
         }
       });
     });
+    socket.on("follow", (data: any) => {
+      setFollowCount((count) => count + 1);
+      setLatestFollow(data.sender);
+      toast.success(`${data.sender} Just followed`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    });
+
+    socket.on("like", (data: any) => {
+      console.log(data);
+      setLikes((count) => count + 1);
+      setLatestLike(data.sender);
+      toast.success(`${data.sender} just liked!`, {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: likeProgress,
+        theme: "dark",
+      });
+    });
 
     socket.on("errors", (data: any) => {
       setErrors(data);
       setLoading(false);
+    });
+
+    socket.on("join", (data: any) => {
+      console.log(data);
+      toast.success(`${data.sender} just joined!`, {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
     });
 
     socket.on("success", () => {
@@ -78,6 +139,8 @@ function Chat() {
 
     return () => {
       socket.off("chat");
+      socket.off("follow");
+      socket.off("like");
     };
   }, []);
 
@@ -105,6 +168,10 @@ function Chat() {
     }
   };
 
+  const handleChange = (value: string, type: string) => {
+    setWidgetData((prev) => ({ ...prev, [type]: value }));
+  };
+
   return (
     <Box
       sx={{
@@ -112,8 +179,13 @@ function Chat() {
         borderRadius: "0 0 0 2rem",
         height: "100%",
         display: "flex",
+        flexDirection: "column",
         padding: "2rem",
+        minWidth: 600,
+        overflow: "auto",
+        maxWidth: 600,
       }}
+      ref={chatBoxRef}
     >
       {!connected ? (
         <Box
@@ -126,6 +198,87 @@ function Chat() {
           <Box display={"flex"} justifyContent="center" width={"100%"}>
             <Logo />
           </Box>
+          <Box>
+            <Box
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "1rem",
+                margin: "1rem",
+              }}
+            >
+              <Typography variant="h5" textAlign="center">
+                Turn on widgets
+              </Typography>
+              <Checkbox
+                value={widgetData.show}
+                onChange={() => {
+                  setWidgetData((prev) => ({
+                    ...prev,
+                    show: !widgetData.show,
+                  }));
+                }}
+              />
+            </Box>
+            {widgetData.show && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{ flexDirection: "column", marginRight: 5, marginTop: 5 }}
+                >
+                  <Typography variant="body2" textAlign="center">
+                    Followers
+                  </Typography>
+                  <TextField
+                    label="Goal"
+                    type="number"
+                    sx={{ width: 100, marginTop: 3 }}
+                    InputLabelProps={{
+                      shrink: true,
+                      sx: { fontSize: "0.8rem" },
+                    }}
+                    onChange={(e) =>
+                      setWidgetData((prev) => ({
+                        ...prev,
+                        ["followers"]: parseInt(e.target.value),
+                      }))
+                    }
+                  />
+                </Box>
+                <Box
+                  sx={{ flexDirection: "column", marginLeft: 5, marginTop: 5 }}
+                >
+                  <Typography variant="body2" textAlign="center">
+                    Likes
+                  </Typography>
+                  <TextField
+                    label="Goal"
+                    type="number"
+                    sx={{ width: 100, marginTop: 3 }}
+                    InputLabelProps={{
+                      shrink: true,
+                      sx: { fontSize: "0.8rem" },
+                    }}
+                    onChange={(e) =>
+                      setWidgetData((prev) => ({
+                        ...prev,
+                        ["likes"]: parseInt(e.target.value),
+                      }))
+                    }
+                  />
+                </Box>
+              </Box>
+            )}
+          </Box>
+
           <TransparencySlider setTransparency={setTransparency} />
           <Box textAlign={"start"} margin="0 0 2rem 0">
             <Typography variant="h5">Enter your channel names</Typography>
@@ -173,9 +326,7 @@ function Chat() {
             <Box
               sx={{
                 display: "flex",
-                width: "100%",
                 flexDirection: "column",
-                alignItems: "flex-start",
                 gap: "0.5rem",
               }}
             >
@@ -259,14 +410,41 @@ function Chat() {
         <Box
           sx={{
             overflow: "hidden",
+            width: "100%",
           }}
         >
-          <Logo />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <div>
+              {widgetData.likes ? (
+                <ProgressCircle
+                  latest={latestLike}
+                  progress={likeProgress}
+                  type="Like"
+                />
+              ) : null}
+            </div>
+
+            <div>
+              {widgetData.followers && (
+                <ProgressCircle
+                  latest={latestFollow}
+                  progress={followProgress}
+                  type="Follow"
+                />
+              )}
+            </div>
+          </div>
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               gap: "0.5rem",
+              wordBreak: "break-all",
             }}
           >
             {messages.map((message, index) => {
@@ -319,6 +497,19 @@ function Chat() {
           </Box>
         </Box>
       )}
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        theme="dark"
+        limit={3}
+        style={{ width: "40%" }}
+      />
     </Box>
   );
 }

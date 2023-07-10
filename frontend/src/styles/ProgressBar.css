@@ -1,0 +1,37 @@
+.circle-progress-bar {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+  
+  .circle-background,
+  .circle-progress {
+    fill: none;
+  }
+  
+  .circle-background {
+    stroke: #eee;
+  }
+  
+  .circle-progress {
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
+  
+  .circle-progress-gradient {
+    stroke: url(#gradient);
+  }
+  
+  .circle-dot {
+    fill: #28A745;
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3));
+  }
+
+  .circle-text {
+    font-size: 10px;
+    fill: white !important; /* set the text color to white and use !important */
+    font-weight: bold;
+    font-family: sans-serif;
+  }

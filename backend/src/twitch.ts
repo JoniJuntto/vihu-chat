@@ -1,6 +1,10 @@
 import { sendToClient } from "./index";
 import { client as twitchClient } from "tmi.js";
 
+const auth = async () => {
+  const url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.env.TWITCH_CLIENT_ID}&redirect_uri=http://localhost:3001&response_type=code&scope=channel:read:follows`;
+
+};
 const connectToTwitch = async (channelName: string) => {
   const client = new twitchClient({
     options: { debug: false },
