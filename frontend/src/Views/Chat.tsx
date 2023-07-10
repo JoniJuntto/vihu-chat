@@ -1,4 +1,5 @@
-  TextField,
+import "react-toastify/dist/ReactToastify.css";
+
 import {
   Box,
   CircularProgress,
@@ -6,22 +7,17 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { LoadingButton } from "@mui/lab";
 import Logo from "~/assets/logo";
+import ProgressCircle from "~/components/ProgressCircle";
 import TransparencySlider from "~/components/TransparencySlider";
 import { io } from "socket.io-client";
 import tiktok from "~/assets/tiktok.png";
 import twitch from "~/assets/twitch.png";
-import "react-toastify/dist/ReactToastify.css";
 import youtube from "~/assets/youtube.png";
-
-import Logo from "~/assets/logo";
-import TransparencySlider from "~/components/TransparencySlider";
-import { ToastContainer, toast } from "react-toastify";
-
-import ProgressCircle from "~/components/ProgressCircle";
 
 type message = {
   message: string;
@@ -55,7 +51,6 @@ function Chat() {
   const [followGoal, setFollowGoal] = useState<number>(1);
   const [likesGoal, setLikesGoal] = useState<number>(1);
 
-  
   const followProgress = (followCount / followGoal) * 100;
   const likeProgress = (likes / likesGoal) * 100;
   const chatBoxRef = useRef(null);
@@ -156,8 +151,6 @@ function Chat() {
         return <img src={tiktok} style={{ width: 30, height: 30 }} />;
     }
   };
-
-
 
   const handleChange = (value: string, type: string) => {
     if (type === "likes") {
