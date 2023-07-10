@@ -45,6 +45,13 @@ const connectToTiktok = async (tiktokUsername: string) => {
     }
   });
   client.on("member", (data) => {
+    sendToClient("tiktok", tiktokUsername, {
+      type: "join",
+      message: `${data.nickname} joins the stream!`,
+      sender: data.nickname,
+      followRole: data.followRole,
+      followInfo: data.followInfo.followerCount,
+    });
     console.log(`${data.uniqueId} joins the stream!`);
   });
 

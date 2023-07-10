@@ -2,6 +2,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import {
   Box,
+  Checkbox,
   CircularProgress,
   Link,
   TextField,
@@ -18,6 +19,7 @@ import { io } from "socket.io-client";
 import tiktok from "~/assets/tiktok.png";
 import twitch from "~/assets/twitch.png";
 import youtube from "~/assets/youtube.png";
+import { CheckBox } from "@mui/icons-material";
 
 type message = {
   message: string;
@@ -46,13 +48,14 @@ function Chat() {
   const [connected, setConnected] = useState<boolean>(false);
   const [likes, setLikes] = useState(0);
   const [latestLike, setLatestLike] = useState("");
-  const [showFollowers, setShowFollowers] = useState(false);
-  const [showLikes, setShowLikes] = useState(false);
-  const [followGoal, setFollowGoal] = useState<number>(1);
-  const [likesGoal, setLikesGoal] = useState<number>(1);
+  const [widgetData, setWidgetData] = useState<Record<string, any>>({
+    followers: 0,
+    likes: 0,
+    show: false,
+  });
 
-  const followProgress = (followCount / followGoal) * 100;
-  const likeProgress = (likes / likesGoal) * 100;
+  const followProgress = (followCount / widgetData.followers) * 100;
+  const likeProgress = (likes / widgetData.likes) * 100;
   const chatBoxRef = useRef(null);
 
   useEffect(() => {
@@ -111,6 +114,19 @@ function Chat() {
       setLoading(false);
     });
 
+    socket.on("join", (data: any) => {
+      console.log(data);
+      toast.success(`${data.sender} just joined!`, {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
+    });
+
     socket.on("success", () => {
       setErrors({
         tiktok: "",
@@ -153,26 +169,7 @@ function Chat() {
   };
 
   const handleChange = (value: string, type: string) => {
-    if (type === "likes") {
-      setShowLikes(true);
-      setLikesGoal(parseInt(value));
-    } else {
-      setShowFollowers(true);
-      setFollowGoal(parseInt(value));
-    }
-  };
-
-  const createToast = () => {
-    toast.success("Hello", {
-      position: "top-center",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "dark",
-    });
+    setWidgetData((prev) => ({ ...prev, [type]: value }));
   };
 
   return (
@@ -184,8 +181,9 @@ function Chat() {
         display: "flex",
         flexDirection: "column",
         padding: "2rem",
-        minWidth: 500,
+        minWidth: 600,
         overflow: "auto",
+        maxWidth: 600,
       }}
       ref={chatBoxRef}
     >
@@ -201,52 +199,84 @@ function Chat() {
             <Logo />
           </Box>
           <Box>
-            <Typography variant="h5" textAlign="center">
-              Turn on widgets
-            </Typography>
             <Box
-              sx={{
+              style={{
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "center",
                 alignItems: "center",
+                gap: "1rem",
+                margin: "1rem",
               }}
             >
-              <Box
-                sx={{ flexDirection: "column", marginRight: 5, marginTop: 5 }}
-              >
-                <Typography variant="body2" textAlign="center">
-                  Followers
-                </Typography>
-                <TextField
-                  label="Goal"
-                  type="number"
-                  sx={{ width: 100, marginTop: 3 }}
-                  InputLabelProps={{
-                    shrink: true,
-                    sx: { fontSize: "0.8rem" },
-                  }}
-                  onChange={(e) => handleChange(e.target.value, "followers")}
-                />
-              </Box>
-              <Box
-                sx={{ flexDirection: "column", marginLeft: 5, marginTop: 5 }}
-              >
-                <Typography variant="body2" textAlign="center">
-                  Likes
-                </Typography>
-                <TextField
-                  label="Goal"
-                  type="number"
-                  sx={{ width: 100, marginTop: 3 }}
-                  InputLabelProps={{
-                    shrink: true,
-                    sx: { fontSize: "0.8rem" },
-                  }}
-                  onChange={(e) => handleChange(e.target.value, "likes")}
-                />
-              </Box>
+              <Typography variant="h5" textAlign="center">
+                Turn on widgets
+              </Typography>
+              <Checkbox
+                value={widgetData.show}
+                onChange={() => {
+                  setWidgetData((prev) => ({
+                    ...prev,
+                    show: !widgetData.show,
+                  }));
+                }}
+              />
             </Box>
+            {widgetData.show && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{ flexDirection: "column", marginRight: 5, marginTop: 5 }}
+                >
+                  <Typography variant="body2" textAlign="center">
+                    Followers
+                  </Typography>
+                  <TextField
+                    label="Goal"
+                    type="number"
+                    sx={{ width: 100, marginTop: 3 }}
+                    InputLabelProps={{
+                      shrink: true,
+                      sx: { fontSize: "0.8rem" },
+                    }}
+                    onChange={(e) =>
+                      setWidgetData((prev) => ({
+                        ...prev,
+                        ["followers"]: parseInt(e.target.value),
+                      }))
+                    }
+                  />
+                </Box>
+                <Box
+                  sx={{ flexDirection: "column", marginLeft: 5, marginTop: 5 }}
+                >
+                  <Typography variant="body2" textAlign="center">
+                    Likes
+                  </Typography>
+                  <TextField
+                    label="Goal"
+                    type="number"
+                    sx={{ width: 100, marginTop: 3 }}
+                    InputLabelProps={{
+                      shrink: true,
+                      sx: { fontSize: "0.8rem" },
+                    }}
+                    onChange={(e) =>
+                      setWidgetData((prev) => ({
+                        ...prev,
+                        ["likes"]: parseInt(e.target.value),
+                      }))
+                    }
+                  />
+                </Box>
+              </Box>
+            )}
           </Box>
 
           <TransparencySlider setTransparency={setTransparency} />
@@ -390,17 +420,17 @@ function Chat() {
             }}
           >
             <div>
-              {showLikes && (
+              {widgetData.likes ? (
                 <ProgressCircle
                   latest={latestLike}
                   progress={likeProgress}
                   type="Like"
                 />
-              )}
+              ) : null}
             </div>
 
             <div>
-              {showFollowers && (
+              {widgetData.followers && (
                 <ProgressCircle
                   latest={latestFollow}
                   progress={followProgress}
