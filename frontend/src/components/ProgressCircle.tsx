@@ -1,9 +1,9 @@
-import "../styles/progressBar.css";
+import "../styles/ProgressBar.css";
 
 const CircleProgressBar = ({
   progress,
   latest,
-  type
+  type,
 }: {
   progress: number;
   latest: string;
@@ -67,7 +67,6 @@ const CircleProgressBar = ({
           textAnchor="middle"
         >
           {latest}
-          
         </text>
         <text
           className="circle-text"
@@ -77,7 +76,6 @@ const CircleProgressBar = ({
           textAnchor="middle"
         >
           {type}
-          
         </text>
       </svg>
     </>
