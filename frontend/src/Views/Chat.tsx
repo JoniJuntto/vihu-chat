@@ -19,7 +19,6 @@ import { io } from "socket.io-client";
 import tiktok from "~/assets/tiktok.png";
 import twitch from "~/assets/twitch.png";
 import youtube from "~/assets/youtube.png";
-import { CheckBox } from "@mui/icons-material";
 
 type message = {
   message: string;
@@ -57,6 +56,11 @@ function Chat() {
   const followProgress = (followCount / widgetData.followers) * 100;
   const likeProgress = (likes / widgetData.likes) * 100;
   const chatBoxRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     const channelsString = localStorage.getItem("channels");
@@ -81,52 +85,53 @@ function Chat() {
     socket.on("follow", (data: any) => {
       setFollowCount((count) => count + 1);
       setLatestFollow(data.sender);
-      toast.success(`${data.sender} Just followed`, {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
+      setMessages((messages) => {
+        return [
+          ...messages,
+          {
+            message: `${data.sender} Just followed`,
+            sender: data.sender,
+            source: data.source,
+          },
+        ];
       });
     });
-
+    /*
     socket.on("like", (data: any) => {
       console.log(data);
       setLikes((count) => count + 1);
       setLatestLike(data.sender);
-      toast.success(`${data.sender} just liked!`, {
-        position: "top-center",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: likeProgress,
-        theme: "dark",
+      setMessages((messages) => {
+        return [
+          ...messages,
+          {
+            message: `${data.sender} Just liked`,
+            sender: data.sender,
+            source: data.source,
+          },
+        ];
       });
-    });
+    }); */
 
     socket.on("errors", (data: any) => {
       setErrors(data);
       setLoading(false);
     });
 
-    socket.on("join", (data: any) => {
+    /*  socket.on("join", (data: any) => {
       console.log(data);
-      toast.success(`${data.sender} just joined!`, {
-        position: "top-center",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "dark",
+      setMessages((messages) => {
+        return [
+          ...messages,
+          {
+            message: `${data.sender} just joined!`,
+            sender: data.sender,
+            source: data.source,
+          },
+        ];
       });
     });
-
+ */
     socket.on("success", () => {
       setErrors({
         tiktok: "",
@@ -143,6 +148,10 @@ function Chat() {
       socket.off("like");
     };
   }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const connectBot = useCallback(async () => {
     localStorage.setItem("channels", JSON.stringify(channels));
@@ -494,6 +503,7 @@ function Chat() {
                 </Box>
               );
             })}
+            <div ref={messagesEndRef} />
           </Box>
         </Box>
       )}
