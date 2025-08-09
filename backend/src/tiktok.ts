@@ -7,6 +7,7 @@ const connectToTiktok = async (tiktokUsername: string) => {
   try {
     await client.connect();
   } catch (err) {
+    console.error(err);
     if (
       err.message ===
       "Failed to retrieve room_id from page source. User might be offline."
